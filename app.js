@@ -4,6 +4,31 @@ const header = document.querySelector('[data-header]');
 const progress = document.querySelector('[data-scroll-progress]');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+const heroVideo = document.querySelector('[data-deferred-video]');
+const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+const shouldLoadHeroVideo = heroVideo
+  && !reduceMotion
+  && !connection?.saveData
+  && window.matchMedia('(min-width: 761px)').matches;
+
+if (shouldLoadHeroVideo) {
+  const loadHeroVideo = () => {
+    const source = heroVideo.querySelector('source[data-src]');
+    if (!source || source.hasAttribute('src')) return;
+    source.src = source.dataset.src;
+    heroVideo.load();
+    heroVideo.play().catch(() => {});
+  };
+
+  window.addEventListener('load', () => {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(loadHeroVideo, { timeout: 6000 });
+    } else {
+      window.setTimeout(loadHeroVideo, 4000);
+    }
+  }, { once: true });
+}
+
 if (menuButton && nav) {
   menuButton.addEventListener('click', () => {
     const open = nav.classList.toggle('open');
