@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://0036111-lab.github.io/novaya-vysota/sitemap.xml
