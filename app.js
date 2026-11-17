@@ -92,11 +92,15 @@ const alignHashTarget = () => {
   target?.scrollIntoView({ block: 'start', behavior: 'auto' });
 };
 
-window.addEventListener('hashchange', () => window.requestAnimationFrame(alignHashTarget));
+const scheduleHashAlignment = () => {
+  window.requestAnimationFrame(alignHashTarget);
+  window.setTimeout(alignHashTarget, 300);
+  window.setTimeout(alignHashTarget, 1200);
+};
+
+window.addEventListener('hashchange', scheduleHashAlignment);
 window.addEventListener('load', () => {
-  if (window.location.hash) {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(alignHashTarget));
-  }
+  if (window.location.hash) scheduleHashAlignment();
 }, { once: true });
 revealHashTarget();
 
