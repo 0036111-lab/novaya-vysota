@@ -56,15 +56,49 @@ const updateScroll = () => {
 window.addEventListener('scroll', updateScroll, { passive: true });
 updateScroll();
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('revealed');
-      observer.unobserve(entry.target);
-    }
+const revealElements = document.querySelectorAll('[data-reveal]');
+let observer;
+
+if ('IntersectionObserver' in window && !reduceMotion) {
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  revealElements.forEach((element) => {
+    element.classList.add('reveal-pending');
+    observer.observe(element);
   });
-}, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
-document.querySelectorAll('[data-reveal]').forEach((element) => observer.observe(element));
+}
+
+const revealHashTarget = () => {
+  if (!window.location.hash) return;
+  const target = document.querySelector(window.location.hash);
+  if (!target) return;
+  target.querySelectorAll('[data-reveal]').forEach((element) => {
+    element.classList.add('revealed');
+    element.classList.remove('reveal-pending');
+    observer?.unobserve(element);
+  });
+  return target;
+};
+
+const alignHashTarget = () => {
+  const target = revealHashTarget();
+  target?.scrollIntoView({ block: 'start', behavior: 'auto' });
+};
+
+window.addEventListener('hashchange', () => window.requestAnimationFrame(alignHashTarget));
+window.addEventListener('load', () => {
+  if (window.location.hash) {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(alignHashTarget));
+  }
+}, { once: true });
+revealHashTarget();
 
 document.querySelectorAll('[data-year]').forEach((element) => {
   element.textContent = new Date().getFullYear();
